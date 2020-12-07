@@ -54,8 +54,10 @@ void Tree_destruct(struct Tree* tree)
     Subtree_destruct(tree->root);
 
     free(tree->name_equation);
+    free(tree->name_table);
     
     tree->root          = nullptr;
+    tree->name_table    = nullptr;
     tree->name_equation = nullptr;
     tree->size          = 0;
     tree->error         = 0;
@@ -417,7 +419,6 @@ const char* Tree_text_ERROR(struct Tree* tree)
         case_of_switch(FUNC_SYNTAX_ERROR)
         case_of_switch(TYPE_SYNTAX_ERROR)
         case_of_switch(OPERATOR_SYNTAX_ERROR)
-        case_of_switch(VAR_OVERFLOW_ERROR)
 
         default: return "Unknown ERROR";
     }

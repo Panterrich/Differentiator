@@ -14,15 +14,13 @@ DEF_OP(*, MUL, 42,
     {
         struct Node* l_subtree = Node_clone(LNODE, nullptr);
         struct Node* r_subtree = Node_clone(RNODE, nullptr);
-        struct Node* ld_subtree = dL;
-        struct Node* rd_subtree = dR;
 
-        struct Node* left  = CNODE_OP(ld_subtree, MUL, r_subtree);
-        struct Node* right = CNODE_OP(l_subtree,  MUL, rd_subtree);
+        struct Node* left  = CNODE_OP(dL, MUL, r_subtree);
+        struct Node* right = CNODE_OP(l_subtree,  MUL, dR);
 
         Node_fill(current_node, 
                   left,
-                  OPERATION, nullptr, ADD, current_node->prev,
+                  OPERATION, nullptr, ADD, PREV,
                   right);
                 
     })
@@ -32,11 +30,9 @@ DEF_OP(/, DIV, 47,
         struct Node* l_subtree   = Node_clone(LNODE, nullptr);
         struct Node* r_subtree   = Node_clone(RNODE, nullptr);
         struct Node* denominator = Node_clone(RNODE, nullptr);
-        struct Node* ld_subtree  = dL;
-        struct Node* rd_subtree  = dR;
 
-        struct Node* left  = CNODE_OP(ld_subtree, MUL, r_subtree); 
-        struct Node* right = CNODE_OP(l_subtree,  MUL, rd_subtree); 
+        struct Node* left  = CNODE_OP(dL, MUL, r_subtree); 
+        struct Node* right = CNODE_OP(l_subtree,  MUL, dR); 
 
         struct Node* deg   = CNODE_NUM(2);
 
@@ -45,31 +41,31 @@ DEF_OP(/, DIV, 47,
         
         Node_fill(current_node,
                   sub,
-                  OPERATION, nullptr, DIV, current_node->prev,
+                  OPERATION, nullptr, DIV, PREV,
                   pow);
                 
     })
 
 DEF_OP(^, POW, 94, 
     {
-        int left_subtree_is_num  = Subtree_is_number(tree, current_node->left);
-        int right_subtree_is_num = Subtree_is_number(tree, current_node->right);
+        int left_subtree_is_num  = Subtree_is_number(tree, LNODE);
+        int right_subtree_is_num = Subtree_is_number(tree, RNODE);
 
         if (left_subtree_is_num && right_subtree_is_num)
         {
-            Node_destruct(current_node->left);
-            Node_destruct(current_node->right);
+            Node_destruct(LNODE);
+            Node_destruct(RNODE);
 
             Node_fill(current_node, 
                       nullptr,
-                      NUMBER, nullptr, 0, current_node->prev,
+                      NUMBER, nullptr, 0, PREV,
                       nullptr);
         }
 
         else if (left_subtree_is_num && !right_subtree_is_num)
         {
             struct Node* base = LNODE;
-            struct Node* deg  = RNODE;
+            struct Node* deg  = Node_clone(RNODE, nullptr);
             struct Node* num  = Node_clone(LNODE, nullptr);
 
             char* name_func = (char*) calloc(MAX_SIZE_NAME_FUNC, sizeof(char));
@@ -77,40 +73,37 @@ DEF_OP(^, POW, 94,
 
             struct Node* pow  = CNODE_OP(base, POW, deg);
             struct Node* func = CNODE_FUNC(name_func, LN, num);
+            struct Node* mul  = CNODE_OP(pow, MUL, func);
             
             Node_fill(current_node,
-                      pow,
-                      OPERATION, nullptr, MUL, current_node->prev,
-                      func);
+                      mul,
+                      OPERATION, nullptr, MUL, PREV,
+                      dR);
         }
 
         else if (!left_subtree_is_num && right_subtree_is_num)
         {
             if (Is_equal(RCALC, 1))
             {   
-                Node_destruct(LNODE);
-                Node_destruct(RNODE);
-
-                Node_fill(current_node,
-                          nullptr,
-                          NUMBER, nullptr, 1, current_node->prev,
-                          nullptr);
+                Re_linking_subtree(tree, current_node, dL, RNODE);
             }
 
             else
             {
-                struct Node* base  = LNODE;
+                struct Node* base  = Node_clone(LNODE, nullptr);
                 struct Node* coef  = RNODE;
                 struct Node* l_deg = Node_clone(RNODE, nullptr);
 
                 struct Node* num   = CNODE_NUM(1);
                 struct Node* deg   = CNODE_OP(l_deg, SUB, num);
-                struct Node* pow   = CNODE_OP(base, POW, deg);
+                struct Node* pow   = CNODE_OP(base,  POW, deg);
+                struct Node* mul   = CNODE_OP(pow,   MUL, coef);
+                
 
                 Node_fill(current_node,
-                          pow,
-                          OPERATION, nullptr, MUL, current_node->prev,
-                          coef);
+                          mul,
+                          OPERATION, nullptr, MUL, PREV,
+                          dL);
             }
         }
 
@@ -120,8 +113,8 @@ DEF_OP(^, POW, 94,
             struct Node* f2 = Node_clone(LNODE, nullptr);
             struct Node* f3 = Node_clone(LNODE, nullptr);
 
-            struct Node* g1 = Node_clone(LNODE, nullptr);
-            struct Node* g2 = Node_clone(LNODE, nullptr);
+            struct Node* g1 = Node_clone(RNODE, nullptr);
+            struct Node* g2 = Node_clone(RNODE, nullptr);
 
             struct Node* df = dL;
             struct Node* dg = dR;
@@ -139,7 +132,7 @@ DEF_OP(^, POW, 94,
             
             Node_fill(current_node,
                       pow, 
-                      OPERATION, nullptr, MUL, current_node->prev,
+                      OPERATION, nullptr, MUL, PREV,
                       add);
 
         }        
@@ -148,13 +141,12 @@ DEF_OP(^, POW, 94,
 DEF_FUNC(ln,     LN,     0x101ba648, 65, 
     {
         struct Node* right = Node_clone(RNODE, nullptr);
-        struct Node* left  = dR;
                     
         free(FUNCTION);
 
         Node_fill(current_node,
-                  left, 
-                  OPERATION, nullptr, DIV, current_node->prev, 
+                  dR, 
+                  OPERATION, nullptr, DIV, PREV, 
                   right);  
 
     })
@@ -162,7 +154,6 @@ DEF_FUNC(ln,     LN,     0x101ba648, 65,
 DEF_FUNC(sin,    SIN,    0xbf987f58, 66, 
     {
         struct Node* arg   = Node_clone(RNODE, nullptr);
-        struct Node* right = dR;
 
         char* name_func = (char*) calloc(MAX_SIZE_NAME_FUNC, sizeof(char));
         sprintf(name_func, "cos");
@@ -173,15 +164,14 @@ DEF_FUNC(sin,    SIN,    0xbf987f58, 66,
 
         Node_fill(current_node,
                   func,
-                  OPERATION, nullptr, MUL, current_node->prev,
-                  right); 
+                  OPERATION, nullptr, MUL, PREV,
+                  dR); 
 
     })
 
 DEF_FUNC(cos,    COS,    0x238fe9,   67, 
     {
         struct Node* arg   = Node_clone(RNODE, nullptr);
-        struct Node* right = dR;
 
         char* name_func = (char*) calloc(MAX_SIZE_NAME_FUNC, sizeof(char));
         sprintf(name_func, "sin");
@@ -194,15 +184,14 @@ DEF_FUNC(cos,    COS,    0x238fe9,   67,
 
         Node_fill(current_node,
                   mul,
-                  OPERATION, nullptr, MUL, current_node->prev,
-                  right);
+                  OPERATION, nullptr, MUL, PREV,
+                  dR);
 
     })
 
 DEF_FUNC(tg,     TG,     0xf5a17ed,  68, 
     {
         struct Node* arg  = Node_clone(RNODE, nullptr);
-        struct Node* left = dR;
 
         char* name_func = (char*) calloc(MAX_SIZE_NAME_FUNC, sizeof(char));
         sprintf(name_func, "cos");
@@ -214,8 +203,8 @@ DEF_FUNC(tg,     TG,     0xf5a17ed,  68,
         free(FUNCTION);
 
         Node_fill(current_node,
-                  left,
-                  OPERATION, nullptr, DIV, current_node->prev,
+                  dR,
+                  OPERATION, nullptr, DIV, PREV,
                   pow);
 
     })
@@ -238,7 +227,7 @@ DEF_FUNC(ctg,    CTG,    0xdf88c1c4, 69,
 
         Node_fill(current_node,
                   num,
-                  OPERATION, nullptr, MUL, current_node->prev,
+                  OPERATION, nullptr, MUL, PREV,
                   div);
 
     })
@@ -246,7 +235,6 @@ DEF_FUNC(ctg,    CTG,    0xdf88c1c4, 69,
 DEF_FUNC(arcsin, ARCSIN, 0xbf69dd95, 70, 
     {
         struct Node* arg  = Node_clone(RNODE, nullptr);
-        struct Node* left = dR;
 
         char* name_func = (char*) calloc(MAX_SIZE_NAME_FUNC, sizeof(char));
         sprintf(name_func, "sqrt");
@@ -261,8 +249,8 @@ DEF_FUNC(arcsin, ARCSIN, 0xbf69dd95, 70,
         free(FUNCTION);
 
         Node_fill(current_node,
-                  left,
-                  OPERATION, nullptr, DIV, current_node->prev,
+                  dR,
+                  OPERATION, nullptr, DIV, PREV,
                   func);
 
     })
@@ -288,7 +276,7 @@ DEF_FUNC(arccos, ARCCOS, 0x9a380fc2, 71,
 
         Node_fill(current_node,
                   num,
-                  OPERATION, nullptr, MUL, current_node->prev,
+                  OPERATION, nullptr, MUL, PREV,
                   div);
 
     })
@@ -296,7 +284,6 @@ DEF_FUNC(arccos, ARCCOS, 0x9a380fc2, 71,
 DEF_FUNC(arctg,  ARCTG,  0x3cffbcdb, 72, 
     {
         struct Node* arg  = Node_clone(RNODE, nullptr);
-        struct Node* left = dR;
 
         struct Node* num1 = CNODE_NUM(1);
         struct Node* num2 = CNODE_NUM(2);
@@ -307,8 +294,8 @@ DEF_FUNC(arctg,  ARCTG,  0x3cffbcdb, 72,
         free(FUNCTION);
 
         Node_fill(current_node,
-                  left,
-                  OPERATION, nullptr, DIV, current_node->prev,
+                  dR,
+                  OPERATION, nullptr, DIV, PREV,
                   add);
 
     })
@@ -330,14 +317,14 @@ DEF_FUNC(arcctg, ARCCTG, 0xbc7147b0, 73,
 
         Node_fill(current_node,
                     num,
-                    OPERATION, nullptr, MUL, current_node->prev,
+                    OPERATION, nullptr, MUL, PREV,
                     div);
+
     })
 
 DEF_FUNC(sh,     SH,     0x6c8057cc, 74, 
     {
         struct Node* arg  = Node_clone(RNODE, nullptr);
-        struct Node* right = dR;
 
         char* name_func = (char*) calloc(MAX_SIZE_NAME_FUNC, sizeof(char));
         sprintf(name_func, "ch");
@@ -348,15 +335,14 @@ DEF_FUNC(sh,     SH,     0x6c8057cc, 74,
 
         Node_fill(current_node,
                   func,
-                  OPERATION, nullptr, MUL, current_node->prev,
-                  right);
+                  OPERATION, nullptr, MUL, PREV,
+                  dR);
 
     })
 
 DEF_FUNC(ch,     CH,     0x4ab1a5ab, 75, 
     {
         struct Node* arg  = Node_clone(RNODE, nullptr);
-        struct Node* right = dR;
 
         char* name_func = (char*) calloc(MAX_SIZE_NAME_FUNC, sizeof(char));
         sprintf(name_func, "sh");
@@ -367,8 +353,8 @@ DEF_FUNC(ch,     CH,     0x4ab1a5ab, 75,
 
         Node_fill(current_node,
                   func,
-                  OPERATION, nullptr, MUL, current_node->prev,
-                  right);
+                  OPERATION, nullptr, MUL, PREV,
+                  dR);
 
     })
 
@@ -388,7 +374,7 @@ DEF_FUNC(th,     TH,     0x6a4bcdcf, 76,
 
         Node_fill(current_node,
                   left,
-                  OPERATION, nullptr, DIV, current_node->prev,
+                  OPERATION, nullptr, DIV, PREV,
                   pow);
 
     })
@@ -411,14 +397,13 @@ DEF_FUNC(cth,    CTH,    0xf562ed78, 77,
 
         Node_fill(current_node,
                   num,
-                  OPERATION, nullptr, MUL, current_node->prev,
+                  OPERATION, nullptr, MUL, PREV,
                   div);
     })
 
 DEF_FUNC(sqrt,   SQRT,   0x145c7701, 78, 
     {
         struct Node* arg  = Node_clone(RNODE, nullptr);
-        struct Node* left = dR;
 
         char* name_func = (char*) calloc(MAX_SIZE_STR, sizeof(char));
         sprintf(name_func, "sqrt");
@@ -430,8 +415,8 @@ DEF_FUNC(sqrt,   SQRT,   0x145c7701, 78,
         free(FUNCTION);
 
         Node_fill(current_node,
-                  left,
-                  OPERATION, nullptr, DIV, current_node->prev,
+                  dR,
+                  OPERATION, nullptr, DIV, PREV,
                   mul);
 
     })
@@ -439,7 +424,6 @@ DEF_FUNC(sqrt,   SQRT,   0x145c7701, 78,
 DEF_FUNC(exp,    EXP,    0xe2313450, 79, 
     {
         struct Node* arg  = Node_clone(RNODE, nullptr);
-        struct Node* right = dR;
 
         char* name_func = (char*) calloc(MAX_SIZE_STR, sizeof(char));
         sprintf(name_func, "exp");
@@ -450,7 +434,7 @@ DEF_FUNC(exp,    EXP,    0xe2313450, 79,
 
         Node_fill(current_node,
                   func, 
-                  OPERATION, nullptr, MUL, current_node->prev,
-                  right);
+                  OPERATION, nullptr, MUL, PREV,
+                  dR);
                   
     })

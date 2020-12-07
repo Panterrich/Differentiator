@@ -29,7 +29,7 @@ void Stack_construct(struct Stack* stk, long capacity)
         stk->struct_hash = 0;
         stk->stack_hash  = 0;
 
-        void* temp = malloc((stk->capacity)*sizeof(element_t) + 2 * sizeof(canary_t));
+        void* temp = malloc((stk->capacity) * sizeof(element_t) + 2 * sizeof(canary_t));
 
         if (temp == nullptr)
         {

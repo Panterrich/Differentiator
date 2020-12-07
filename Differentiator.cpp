@@ -33,7 +33,9 @@ void Tree_create(struct Tree* tree, const char* name_equation)
     char* current_operation = equation.lines[0].str;
     Skip_spaces(&current_operation);
 
-    tree->name_table = (struct Variable*) calloc(MAX_VARIBLES, sizeof(struct Variable));
+    tree->name_table = (struct Stack*) calloc(1, sizeof(struct Stack));
+    STACK_CONSTUCT(tree->name_table, INITIAL_VAR);
+
     tree->root = Node_create(tree, nullptr, &current_operation);
 
     Free_memory(&equation);
@@ -59,14 +61,14 @@ struct Node* Node_create(struct Tree* tree, struct Node* previos_node, char** cu
     {    
         *current_opetation += 1;
 
-        current_node->left = Node_create(tree, current_node, current_opetation);
+        LNODE = Node_create(tree, current_node, current_opetation);
 
         Node_fill(current_node,
-                  current_node->left,
+                  LNODE,
                   OPERATION, nullptr, Get_operator(current_opetation), previos_node, 
-                  current_node->right);
+                  RNODE);
 
-        current_node->right = Node_create(tree, current_node, current_opetation);
+        RNODE = Node_create(tree, current_node, current_opetation);
 
         Skip_spaces(current_opetation);
         
@@ -121,6 +123,14 @@ struct Node* Node_create(struct Tree* tree, struct Node* previos_node, char** cu
         char* name_variable = (char*) calloc(MAX_SIZE_NAME_VARIABLES, sizeof(char));
         sscanf(*current_opetation, "%[^() ]", name_variable);
 
+        struct Variable* variable = (struct Variable*) calloc(1, sizeof(struct Variable));
+
+        variable->name  = name_variable;
+        variable->hash  = Hash(name_variable);
+        variable->value = NAN;
+        
+        Stack_push(tree->name_table, variable);
+
         Node_fill(current_node,
                   nullptr,
                   VAR, name_variable, NAN, previos_node,
@@ -160,7 +170,7 @@ void Node_text_print(struct Tree* tree, struct Node* current_node, FILE* file)
 
     if (current_node == nullptr) return;
 
-    switch (current_node->type)
+    switch (TYPE)
     {
         case VAR:    fprintf(file, "%s", current_node->str);    break;
         case NUMBER: fprintf(file, "%lg", current_node->value); break;
@@ -193,17 +203,17 @@ void Node_text_print(struct Tree* tree, struct Node* current_node, FILE* file)
         
         case OPERATION:
         {
-            if ((current_node == tree->root) || ((PREV_TYPE(current_node) == OPERATION)   && (PREV_OP(current_node) == POW))   ||
-                ((PREV_TYPE(current_node) == FUNC)    && ((PREV_OP(current_node) == SQRT) || (PREV_OP(current_node) == EXP)))  ||
-                ((PREV_OP(current_node) == OPERATION) && ((PREV_OP(current_node) == ADD)  || (PREV_OP(current_node) == SUB))   &&
-                (current_node->type == OPERATION)     && ((OP == ADD) || (OP == SUB))))
+            if ((current_node == tree->root) || ((PREV_TYPE(current_node) == OPERATION)     && (PREV_OP(current_node) == POW))   ||
+                ((PREV_TYPE(current_node) == FUNC)      && ((PREV_OP(current_node) == SQRT) || (PREV_OP(current_node) == EXP)))  ||
+                ((PREV_TYPE(current_node) == OPERATION) && ((PREV_OP(current_node) == ADD)  || (PREV_OP(current_node) == SUB))   &&
+                 (TYPE == OPERATION)      && ((OP == ADD) || (OP == SUB))))
             {
                 switch ((int)(current_node->value))
                 {
-                    case ADD: OP_PRINT("", " + ",  ""); break;
-                    case SUB: OP_PRINT("", " - ",  ""); break;
-                    case MUL: OP_PRINT("", " * ",  ""); break;
-                    case DIV: OP_PRINT("", " \\ ", ""); break;
+                    case ADD: OP_PRINT("\0", " + ",  "\0"); break;
+                    case SUB: OP_PRINT("\0", " - ",  "\0"); break;
+                    case MUL: OP_PRINT("\0", " * ",  "\0"); break;
+                    case DIV: OP_PRINT("\0", " \\ ", "\0"); break;
                     case POW: if ((LNODE->type == OPERATION) || (LNODE->type == FUNC) || 
                                  ((LNODE->type == VAR) && (strlen_n(LNODE->str) > 1)))
                             {
@@ -212,7 +222,7 @@ void Node_text_print(struct Tree* tree, struct Node* current_node, FILE* file)
 
                             else
                             {
-                                OP_PRINT("",  "^(", ")");
+                                OP_PRINT("\0",  "^(", ")");
                             }
                             
                             break;
@@ -228,10 +238,10 @@ void Node_text_print(struct Tree* tree, struct Node* current_node, FILE* file)
             {
                 switch ((int)(current_node->value))
                 {
-                    case ADD: OP_PRINT("(",  " + ",  ")"); break;
-                    case SUB: OP_PRINT("(",  " - ",  ")"); break;
-                    case MUL: OP_PRINT("",   " * ",   ""); break;
-                    case DIV: OP_PRINT("",   " \\ ",  ""); break;
+                    case ADD: OP_PRINT("(",    " + ",  ")"); break;
+                    case SUB: OP_PRINT("(",    " - ",  ")"); break;
+                    case MUL: OP_PRINT("\0",   " * ",   "\0"); break;
+                    case DIV: OP_PRINT("\0",   " \\ ",  "\0"); break;
                     case POW: if ((LNODE->type == OPERATION) || (LNODE->type == FUNC) || 
                                  ((LNODE->type == VAR) && (strlen_n(LNODE->str) > 1)))
                             {
@@ -240,7 +250,7 @@ void Node_text_print(struct Tree* tree, struct Node* current_node, FILE* file)
 
                             else
                             {
-                                OP_PRINT("",  "^(", ")");
+                                OP_PRINT("\0",  "^(", ")");
                             }
                             
                             break;
@@ -321,9 +331,9 @@ void Equation_tex_print(struct Tree* tree, FILE* file, struct Text* text)
     TREE_ASSERT_OK(tree);
     assert(file != nullptr);
 
-    PRINT_RANDOM_SENTENSE;
+    PRINT_RANDOM_SENTENSE();
 
-    BEGIN_AND_RESIZE_FORMULA;
+    BEGIN_AND_RESIZE_FORMULA();
 
     Node_tex_print(tree, tree->root, file);
     fprintf(file, "$\n}\n\\end{equation}\n\n");
@@ -336,13 +346,21 @@ void Node_tex_print(struct Tree* tree, struct Node* current_node, FILE* file)
 
     if (current_node == nullptr) return;
 
-    switch (current_node->type)
+    switch (TYPE)
     {
         case VAR: fprintf(file, "%s", current_node->str); break;
         case NUMBER: 
         {
-            if (current_node->value < 0) fprintf(file, "(%lg)", current_node->value);
-            else fprintf(file, "%lg", current_node->value);
+            if ((current_node->value < 0) && !(current_node == tree->root) && 
+                                             !((PREV_TYPE(current_node) == OPERATION) && (PREV_OP(current_node) == DIV)))
+            {
+                fprintf(file, "(%lg)", current_node->value);
+            }
+
+            else 
+            {
+                fprintf(file, "%lg", current_node->value);
+            }
 
             break;
         }
@@ -364,8 +382,8 @@ void Node_tex_print(struct Tree* tree, struct Node* current_node, FILE* file)
                 case CH:     FUNC_TEXPRINT("\\ch ",     "\\left(", "\\right)"); break;
                 case TH:     FUNC_TEXPRINT("\\th ",     "\\left(", "\\right)"); break;
                 case CTH:    FUNC_TEXPRINT("\\cth ",    "\\left(", "\\right)"); break;
-                case SQRT:   FUNC_TEXPRINT("\\sqrt{ ",  "",               "}"); break;
-                case EXP:    FUNC_TEXPRINT("e^{ ",      "",               "}"); break;
+                case SQRT:   FUNC_TEXPRINT("\\sqrt{ ",  "\0",             "}"); break;
+                case EXP:    FUNC_TEXPRINT("e^{ ",      "\0",             "}"); break;
 
                 default:
                     tree->error = FUNC_SYNTAX_ERROR;
@@ -378,17 +396,18 @@ void Node_tex_print(struct Tree* tree, struct Node* current_node, FILE* file)
 
         case OPERATION:
         {
-            if ((current_node == tree->root) || ((PREV_TYPE(current_node) == OPERATION)   && (PREV_OP(current_node) == POW))   ||
-                ((PREV_TYPE(current_node) == FUNC)    && ((PREV_OP(current_node) == SQRT) || (PREV_OP(current_node) == EXP)))  ||
-                ((PREV_OP(current_node) == OPERATION) && ((PREV_OP(current_node) == ADD)  || (PREV_OP(current_node) == SUB))   &&
-                (current_node->type == OPERATION)     && ((OP == ADD) || (OP == SUB))))
+            if ((current_node == tree->root) || ((PREV_TYPE(current_node) == OPERATION)     && (PREV_OP(current_node) == POW))   ||
+                ((PREV_TYPE(current_node) == FUNC)      && ((PREV_OP(current_node) == SQRT) || (PREV_OP(current_node) == EXP)))  ||
+                ((PREV_TYPE(current_node) == OPERATION) && ( PREV_OP(current_node) == DIV)) ||
+                ((PREV_TYPE(current_node) == OPERATION) && ((PREV_OP(current_node) == ADD)  || (PREV_OP(current_node) == SUB))   &&
+                 (TYPE == OPERATION)      && ((OP == ADD) || (OP == SUB))))
             {
                 switch ((int)(current_node->value))
                 {
-                    case ADD: OP_TEXPRINT("",         " + ",         ""); break;
-                    case SUB: OP_TEXPRINT("",         " - ",         ""); break;
-                    case MUL: OP_TEXPRINT("",         " \\cdot ",    ""); break;
-                    case DIV: OP_TEXPRINT("\\cfrac{", "}{",         "}"); break;
+                    case ADD: OP_TEXPRINT("\0",         " + ",         "\0"); break;
+                    case SUB: OP_TEXPRINT("\0",         " - ",         "\0"); break;
+                    case MUL: OP_TEXPRINT("\0",         " \\cdot ",    "\0"); break;
+                    case DIV: OP_TEXPRINT("\\cfrac{", "}{",             "}"); break;
                     case POW: if ((LNODE->type == OPERATION) || (LNODE->type == FUNC) || 
                                  ((LNODE->type == VAR) && (strlen_n(LNODE->str) > 1)))
                             {
@@ -397,7 +416,7 @@ void Node_tex_print(struct Tree* tree, struct Node* current_node, FILE* file)
 
                             else
                             {
-                                OP_TEXPRINT("",  "^{", "}");
+                                OP_TEXPRINT("\0",  "^{", "}");
                             }
                             
                             break;
@@ -413,10 +432,10 @@ void Node_tex_print(struct Tree* tree, struct Node* current_node, FILE* file)
             {
                 switch ((int)(current_node->value))
                 {
-                    case ADD: OP_TEXPRINT("\\left(",  " + ",        "\\right)"); break;
-                    case SUB: OP_TEXPRINT("\\left(",  " - ",        "\\right)"); break;
-                    case MUL: OP_TEXPRINT("",         " \\cdot ",           ""); break;
-                    case DIV: OP_TEXPRINT("\\cfrac{", "}{",                "}"); break;
+                    case ADD: OP_TEXPRINT("\\left(",  " + ",      "\\right)"); break;
+                    case SUB: OP_TEXPRINT("\\left(",  " - ",      "\\right)"); break;
+                    case MUL: OP_TEXPRINT("\0",       " \\cdot ",       "\0"); break;
+                    case DIV: OP_TEXPRINT("\\cfrac{", "}{",              "}"); break;
                     case POW: 
                         {
                             if ((LNODE->type == OPERATION) || (LNODE->type == FUNC) || 
@@ -427,7 +446,7 @@ void Node_tex_print(struct Tree* tree, struct Node* current_node, FILE* file)
 
                             else
                             {
-                                OP_TEXPRINT("",  "^{", "}");
+                                OP_TEXPRINT("\0",  "^{", "}");
                             }
                             
                             break;
@@ -555,13 +574,17 @@ int Subtree_is_number(struct Tree* tree, struct Node* current_node)
 
     if (current_node == nullptr) return 0;
 
-    if (current_node->type == VAR)         return 0;
-    if (current_node->type == NUMBER)      return 1;
+    if (TYPE == VAR)         return 0;
+    if (TYPE == NUMBER)      return 1;
 
-    if (current_node->type == FUNC)        return Subtree_is_number(tree, current_node->right);
+    #ifndef ACCURATE_CALCULATION
+    if (TYPE == FUNC)        return Subtree_is_number(tree, RNODE);
+    #else
+    if (TYPE == FUNC)        return 0;
+    #endif
 
-    if (current_node->type == OPERATION)   return Subtree_is_number(tree, current_node->left) * 
-                                                  Subtree_is_number(tree, current_node->right);
+    if (TYPE == OPERATION)   return Subtree_is_number(tree, LNODE) * 
+                                    Subtree_is_number(tree, RNODE);
 
     return 0;   
 }
@@ -586,8 +609,8 @@ void Node_count(struct Tree* tree, struct Node* current_node, size_t* count)
 
     ++(*count);
 
-    if (current_node->left  != nullptr) Node_count(tree, current_node->left,  count);
-    if (current_node->right != nullptr) Node_count(tree, current_node->right, count);
+    if (LNODE != nullptr) Node_count(tree, LNODE, count);
+    if (RNODE != nullptr) Node_count(tree, RNODE, count);
 }
 
 int Find_func(char* current_symbol)
@@ -609,10 +632,10 @@ struct Variable* Find_var(struct Tree* tree, unsigned int hash)
 {
     Tree_null_check(tree);
 
-    for (size_t num_var = 0; num_var < MAX_VARIBLES; ++num_var)
+    for (size_t num_var = 0; num_var < tree->name_table->size; ++num_var)
     {
-        if (tree->name_table[num_var].hash == hash) return &tree->name_table[num_var];
-        if (tree->name_table[num_var].name == nullptr) return &tree->name_table[num_var];
+        if (((struct Variable*)(tree->name_table->data))[num_var].hash == hash) 
+            return (struct Variable*)&(tree->name_table->data)[num_var];
     }
     
     return nullptr;
@@ -630,7 +653,7 @@ struct Node* Derivative(struct Tree* tree, struct Node* current_node, char* var,
     assert(var  != nullptr);
     assert(file != nullptr);
 
-    switch (current_node->type)
+    switch (TYPE)
     {
         case NUMBER: current_node->value = 0; break;
         case VAR: 
@@ -647,34 +670,6 @@ struct Node* Derivative(struct Tree* tree, struct Node* current_node, char* var,
                 current_node->type = NUMBER;
                 current_node->str = nullptr;
                 current_node->value = 0;
-                
-                // char*        new_var  = strcat(current_node->str, "'");
-                // unsigned int new_hash = Hash(new_var);
-
-                // struct Variable* table_var = Find_var(tree, new_hash);
-
-                // if (table_var != nullptr)
-                // {
-                //     if (table_var->name != nullptr)
-                //     {
-                //         current_node->str = table_var->name;
-                //     }
-
-                //     else
-                //     {
-                //         table_var->name = new_var;
-                //         table_var->hash = new_hash;
-                //         table_var->value = NAN;
-
-                //         current_node->str = table_var->name; 
-                //     }
-                // }
-
-                // else
-                // {
-                //     tree->error = VAR_OVERFLOW_ERROR;
-                //     TREE_ASSERT_OK(tree);
-                // }
             }
 
             break;
@@ -730,7 +725,7 @@ struct Node* Derivative(struct Tree* tree, struct Node* current_node, char* var,
 
     tree->size = Size_subtree(tree, tree->root);
 
-    PRINT_EVERY_TIME;
+    PRINT_EVERY_TIME();
 
     return current_node;
 }
@@ -741,7 +736,7 @@ double Evaluation(struct Tree* tree, struct Node* current_node, FILE* file, stru
     TREE_ASSERT_OK(tree);
     assert(current_node != nullptr);
 
-    switch (current_node->type)
+    switch (TYPE)
     {
         case NUMBER: return current_node->value;
         case VAR:    return Find_var(tree, Hash(current_node->str))->value;
@@ -804,6 +799,7 @@ void Optimization(struct Tree* tree, FILE* file, struct Text* text)
 
         Constant_folding(tree, tree->root, file, text);
         Neutral_delete(tree, tree->root, file, text);
+        Pow_folding(tree, tree->root, file, text);
         
         Equation_tex_print(tree, file, text);
     }    
@@ -813,8 +809,8 @@ void Constant_folding(struct Tree* tree, struct Node* current_node, FILE* file, 
 {
     if (!Subtree_is_number(tree, current_node))
     {
-        if (current_node->left  != nullptr) Constant_folding(tree, current_node->left, file, text);
-        if (current_node->right != nullptr) Constant_folding(tree, current_node->right, file, text);
+        if (LNODE != nullptr) Constant_folding(tree, LNODE, file, text);
+        if (RNODE != nullptr) Constant_folding(tree, RNODE, file, text);
     }
     
     else
@@ -822,7 +818,7 @@ void Constant_folding(struct Tree* tree, struct Node* current_node, FILE* file, 
         double value = Evaluation(tree, current_node, file, text);
 
         struct Node* equal = Node_create_and_fill(nullptr,
-                                                  NUMBER, nullptr, value, current_node->prev,
+                                                  NUMBER, nullptr, value, PREV,
                                                   nullptr);
         
         if (current_node == tree->root) 
@@ -832,13 +828,43 @@ void Constant_folding(struct Tree* tree, struct Node* current_node, FILE* file, 
 
         else
         {
-            if (current_node->prev->left  == current_node) current_node->prev->left = equal;
-            if (current_node->prev->right == current_node) current_node->prev->right = equal;
+            if (PREV->left  == current_node) PREV->left = equal;
+            if (PREV->right == current_node) PREV->right = equal;
         }
 
         tree->size = Size_subtree(tree, tree->root);
 
         Subtree_destruct(current_node);
+    }
+}
+
+void Pow_folding(struct Tree* tree, struct Node* current_node, FILE* file, struct Text* text)
+{
+    if ((TYPE == OPERATION) && (OP == POW) && (LNODE != nullptr))
+    {
+        if ((LNODE->type == OPERATION) && ((char)LNODE->value == POW))
+        {
+            struct Node* base      = LNODE->left;
+            struct Node* left_deg  = LNODE->right;
+            struct Node* right_deg = RNODE;
+            struct Node* mul       = LNODE;
+
+            Node_fill(mul, 
+                      left_deg,
+                      OPERATION, nullptr, MUL, current_node,
+                      right_deg);
+
+            Node_fill(current_node,
+                      base, 
+                      OPERATION, nullptr, POW, PREV,
+                      mul);
+        }
+    }
+
+    else
+    {
+        if (LNODE != nullptr) Pow_folding(tree, LNODE, file, text);
+        if (RNODE != nullptr) Pow_folding(tree, RNODE, file, text);
     }
 }
 
@@ -850,15 +876,15 @@ void Neutral_delete(struct Tree* tree, struct Node* current_node, FILE* file, st
 
     if (current_node != nullptr)
     {
-        if (current_node->left != nullptr)  Neutral_delete(tree, current_node->left,  file, text);
-        if (current_node->right != nullptr) Neutral_delete(tree, current_node->right, file, text);
+        if (LNODE != nullptr) Neutral_delete(tree, LNODE, file, text);
+        if (RNODE != nullptr) Neutral_delete(tree, RNODE, file, text);
     }
     else
     {
         return;
     }
 
-    if (current_node->type == OPERATION)
+    if (TYPE == OPERATION)
     {
         switch (OP)
         {
@@ -980,26 +1006,41 @@ void Neutral_delete(struct Tree* tree, struct Node* current_node, FILE* file, st
                 TREE_ASSERT_OK(tree);
                 break;
         }
-
-        tree->size = Size_subtree(tree, tree->root);
     }
 }
 
 void Re_linking_subtree(struct Tree* tree, struct Node* current_node, struct Node* subtree_linking, struct Node* subtree_delete)
 {
-    struct Node* prev = current_node->prev;
-
     if (current_node == tree->root) 
     {
         tree->root = subtree_linking;
+        subtree_linking->prev = nullptr;
     }
 
     else
     {
-        if (prev->left  == current_node) prev->left  = subtree_linking;
-        if (prev->right == current_node) prev->right = subtree_linking;
+        subtree_linking->prev = PREV;
+
+        if (PREV->left  == current_node) PREV->left  = subtree_linking;
+        if (PREV->right == current_node) PREV->right = subtree_linking;
     }
+    
+    tree->size = Size_subtree(tree, tree->root);
 
     Subtree_destruct(subtree_delete);
     Node_destruct(current_node);       
 }
+
+// struct Node* Total_derivative(struct Tree* tree, struct Node* current_node, char* var, unsigned int hash_var, FILE* file, struct Text* text)
+// {
+//     struct Stack deff = {};
+//     STACK_CONSTUCT(&deff, INITIAL_VAR);
+
+//     for (size_t count_var = 0; count_var < tree->name_table->size; ++count_var)
+//     {
+//         struct Node* der_var = Node_clone(tree->root, nullptr);
+
+//         Stack_push(&deff, Derivative(tree, der_var, ((struct Variable*)(tree->name_table->data))[count_var].name, 
+//                     ((struct Variable*)(tree->name_table->data))[count_var].hash, file, text));
+//     }
+// }

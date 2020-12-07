@@ -109,11 +109,11 @@ void Stack_dump(FILE* file, struct Stack* stk)
 
     const char* code = Text_ERROR(stk);
 
-    fprintf(file, "Stack (ERROR #%d: %s [0x%x] \"%s\" \n", stk->error, code, stk, (stk->name + 1));
+    fprintf(file, "Stack (ERROR #%d: %s [%p] \"%s\" \n", stk->error, code, stk, (stk->name + 1));
     fprintf(file, "{\n");
     fprintf(file, "\tsize = %u\n",      stk->size);
     fprintf(file, "\tcapacity = %u\n",  stk->capacity);
-    fprintf(file, "\tdata[0x%x]\n",     stk->data);
+    fprintf(file, "\tdata[%p]\n",     stk->data);
     fprintf(file, "\t{\n");
 
     if ((stk->data != nullptr) && (stk->error != NEGATIVE_CAPACITY)) 
@@ -171,7 +171,7 @@ void Print_array(FILE*file, struct Stack* stk)
             if (stk->data[i] == nullptr)
                 fprintf(file, "\t\t*[%d] = \\0 (Poison!)\n", i);
             else
-                fprintf(file, "\t\t*[%d] = %x\n", i, stk->data[i]);
+                fprintf(file, "\t\t*[%d] = %p\n", i, stk->data[i]);
         }
 
         for (int i = stk->size + 1; i < stk->capacity; ++i)
@@ -179,7 +179,7 @@ void Print_array(FILE*file, struct Stack* stk)
             if (stk->data[i] == nullptr) 
                 fprintf(file, "\t\t[%d] = \\0 (Poison!)\n", i);
             else
-                fprintf(file, "\t\t[%d] = %x\n", i, stk->data[i]);
+                fprintf(file, "\t\t[%d] = %p\n", i, stk->data[i]);
         }
         break;
     

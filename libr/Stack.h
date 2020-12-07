@@ -10,7 +10,7 @@
 #define POINTER_T
 
 #ifdef POINTER_T
-    typedef struct Node* element_t;
+    typedef void* element_t;
 #endif
 
 #ifdef DOUBLE_T

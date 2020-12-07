@@ -34,6 +34,15 @@ int main(int argc, char* argv[])
     Tree_graph(&tree);
 
     Optimization(&tree, file, &text);
+
+    Tree_graph(&tree);
     
     Equation_tex_dump_close(&tree, file);
+
+
+    FILE* log1 = fopen("log.txt", "a");
+
+    Tree_dump(&tree, log1);
+
+    fclose(log1);
 }

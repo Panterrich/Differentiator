@@ -6,7 +6,7 @@
 
 #ifdef POINTER_T
     static const int code_t = 4;
-    static struct Node* Poison = nullptr;
+    static void* Poison = nullptr;
     static const char* Poison_text = "null";
 #endif
 

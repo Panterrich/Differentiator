@@ -14,33 +14,36 @@
 
 //============================================================
 
-#define RESIZE
+//#define RESIZE
+//#define ACCURATE_CALCULATION
 
+//============================================================
 #ifdef RESIZE
 
-#define BEGIN_AND_RESIZE_FORMULA fprintf(file, "\n\n\\begin{equation}\n"             \
+#define BEGIN_AND_RESIZE_FORMULA() fprintf(file, "\n\n\\begin{equation}\n"           \
                                                "\\resizebox{.9\\textwidth}{!}{\n"    \
                                                "$\\displaystyle ");   
 
 #else
 
-#define BEGIN_AND_RESIZE_FORMULA fprintf(file, "\n\n\\begin{equation}\n"             \
+#define BEGIN_AND_RESIZE_FORMULA() fprintf(file, "\n\n\\begin{equation}\n"           \
                                                "\\resizebox{!}{!}{\n"                \
                                                "$\\displaystyle ");    
 
 #endif
 //============================================================
  
-#define PRINT_RANDOM_SENTENSE fprintf(file, "\n%s\n", (text->lines)[rand() % text->n_lines].str);
-#define PRINT_EVERY_TIME Equation_tex_print(tree, file, text);
+#define PRINT_RANDOM_SENTENSE() fprintf(file, "\n%s\n", (text->lines)[rand() % text->n_lines].str);
+#define PRINT_EVERY_TIME() Equation_tex_print(tree, file, text);
 
 //============================================================
 
 const int MAX_SIZE_STR            = 200;
 const int MAX_SIZE_COMMAND        = 300;
-const int MAX_VARIBLES            = 20;
 const int MAX_SIZE_NAME_VARIABLES = 20;
 const int MAX_SIZE_NAME_FUNC      = 10;
+
+const int INITIAL_VAR = 20;
 
 const double ACCURACY = 1E-7;
 
@@ -77,6 +80,7 @@ const double ACCURACY = 1E-7;
 
 #define PREV_OP(node)   (((node)->prev) == nullptr ? 0 : (char)(node)->prev->value)
 #define PREV_TYPE(node) (((node)->prev) == nullptr ? 0 : (char)(node)->prev->type)
+
 //============================================================
 
 struct Variable
@@ -105,7 +109,7 @@ struct Tree
     const char* name_tree;
           char* name_equation;
     
-    struct Variable* name_table;
+    struct Stack* name_table;
 
     size_t size;
     struct Node* root;
@@ -166,7 +170,6 @@ enum TREE_ERROR
     FUNC_SYNTAX_ERROR              = 13,
     TYPE_SYNTAX_ERROR              = 14,
     OPERATOR_SYNTAX_ERROR          = 15,
-    VAR_OVERFLOW_ERROR             = 16,
 };
 
 //======================================================================
@@ -220,6 +223,8 @@ double Evaluation(struct Tree* tree, struct Node* current_node, FILE* file, stru
 void Constant_folding(struct Tree* tree, struct Node* current_node, FILE* file, struct Text* text);
 
 void Neutral_delete(struct Tree* tree, struct Node* current_node, FILE* file, struct Text* text);
+
+void Pow_folding(struct Tree* tree, struct Node* current_node, FILE* file, struct Text* text);
 
 void Optimization(struct Tree* tree, FILE* file, struct Text* text);
 

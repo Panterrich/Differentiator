@@ -4,6 +4,8 @@
 #define FUNC_ARG_TYPE       current_node->right->type
 #define FUNC_ARG            current_node->right->str
 #define OP                  (char)current_node->value
+#define TYPE                current_node->type
+#define PREV                current_node->prev
 
 #define CNODE_OP(L_NODE, OPERATOR, R_NODE) Node_create_and_fill(L_NODE,                                \
                                                                 OPERATION, nullptr, OPERATOR, nullptr, \
