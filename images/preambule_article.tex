@@ -14,7 +14,9 @@
 
 %%% Дополнительная работа с математикой
 \usepackage{amsmath,amsfonts,amssymb,amsthm,mathtools} % AMS
-\usepackage{icomma} % "Умная" запятая: $0,2$ --- число, $0, 2$ --- перечисление
+%\usepackage{icomma} % "Умная" запятая: $0,2$ --- число, $0, 2$ --- перечисление
+\usepackage{pdflscape}
+\usepackage{breqn}
 
 %%% Номера формул
 %\mathtoolsset{showonlyrefs=true} % Показывать номера только у тех формул, на которые есть \eqref{} в тексте.
@@ -98,7 +100,7 @@
     linkcolor=red,          % внутренние ссылки
     citecolor=green,        % на библиографию
     filecolor=magenta,      % на файлы
-    urlcolor=cyan           % на URL
+    urlcolor=Mulberry          % на URL
 }
 
 %%% Другие пакеты
@@ -124,6 +126,9 @@
 \usepackage{tikz} % Работа с графикой
 \usepackage{pgfplots} % Работа с pgf
 \usepackage{pgfplotstable}
+
+\definecolor{linkcolor}{HTML}{799B03} % цвет ссылок
+\definecolor{urlcolor}{HTML}{799B03} % цвет гиперссылок
 
 %%% Дополнительные пакеты для tikz
 \usepgfplotslibrary{dateplot} % Возможность подписания дат
