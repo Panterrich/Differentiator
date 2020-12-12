@@ -62,7 +62,7 @@ struct String* Placing_pointers_in_text(char* buffer, const size_t n_lines)
     char* pointer_begin = buffer;
     char* pointer_end   = buffer;
 
-    for (int i_line = 0; i_line < n_lines - 1; i_line++) 
+    for (size_t i_line = 0; i_line < n_lines - 1; i_line++) 
     {
         pointer_end = strchr(pointer_begin, '\n');
 
@@ -70,13 +70,13 @@ struct String* Placing_pointers_in_text(char* buffer, const size_t n_lines)
 
 
         (strings + i_line)->str = pointer_begin;
-        (strings + i_line)->len = pointer_end - pointer_begin;
+        (strings + i_line)->len = (size_t)(pointer_end - pointer_begin);
 
         pointer_begin = pointer_end + 1;
     }
 
     strings[n_lines - 1].str = pointer_begin;
-    strings[n_lines - 1].len = strchr(pointer_begin, '\0') - pointer_begin;
+    strings[n_lines - 1].len = (size_t)(strchr(pointer_begin, '\0') - pointer_begin);
 
     return strings;
 }
@@ -88,7 +88,7 @@ void Print_buffer(FILE* file, const struct Text* input_text)
 
     char* pointer_begin = input_text->buffer;
 
-    for (int index_strings = 0; index_strings < input_text->n_lines; ++index_strings)
+    for (size_t index_strings = 0; index_strings < input_text->n_lines; ++index_strings)
     {
         fputs(pointer_begin, file);
         fputc('\n', file);
@@ -102,7 +102,7 @@ void Print_text(FILE* file, const struct Text* input_text)
     assert(file != NULL);
     assert(input_text != NULL);
 
-    for (int index_strings = 0; index_strings < input_text->n_lines; index_strings++)
+    for (size_t index_strings = 0; index_strings < input_text->n_lines; index_strings++)
     {   
         fputs((input_text->lines)[index_strings].str, file);
         fputc('\n', file);

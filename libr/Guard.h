@@ -4,16 +4,41 @@
 #include "Stack.h"
 //===================================================
 
+#ifdef DOUBLE_T
+    static const int code_t = 1;
+    static const double Poison = NAN;
+    static const char*  Poison_text = "NAN";
+#endif
+
+#ifdef INT_T
+    static const int code_t = 2;
+    static const int   Poison = 0xBADDED;
+    static const char* Poison_text = "0xBADDED";
+#endif
+
+#ifdef CHAR_T
+    static const int code_t = 3;
+    static const char  Poison = '\0';
+    static const char* Poison_text = "\\0";
+#endif
+
 #ifdef POINTER_T
     static const int code_t = 4;
-    static void* Poison = nullptr;
-    static const char* Poison_text = "null";
+    static void* const Poison = nullptr;
+    static const char* Text_poison = "null";
 #endif
 
 
 //===================================================
 
-#define STACK_ASSERT_OK(a) ;
+#define STACK_ASSERT_OK(a) if (Stack_ERROR(a))                                                                         \
+                           {                                                                                           \
+                               FILE* log = fopen("log.txt", "a");                                                      \
+                               assert(log != nullptr);                                                                 \
+                               fprintf(log, "ERROR: file %s line %d function %s\n", __FILE__, __LINE__, __FUNCTION__); \
+                               Stack_dump(log, a);                                                                     \
+                               abort();                                                                                \
+                           }
 //===================================================
 
 #define case_of_switch(enum_const) case enum_const: return #enum_const;
@@ -43,7 +68,7 @@ enum ERROR
 
 //===================================================
 
-void NULL_check(struct Stack* stk);
+void Stack_null_check(struct Stack* stk);
 
 int Stack_ERROR(struct Stack* stk);
 

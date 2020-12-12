@@ -1,3 +1,6 @@
+#ifndef ONEGINH
+#define ONEGINH
+
 #include <stdio.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -118,3 +121,5 @@ Free dynamic memory
 void Free_memory(struct Text* text);
 
 //============================================================================================
+
+#endif

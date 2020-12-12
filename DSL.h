@@ -19,28 +19,39 @@
                                                         FUNC, name, num, nullptr, \
                                                         arg)
 
-#define L_TEXPRINT  if (LNODE != nullptr) Node_tex_print(tree,  LNODE, file);
-#define R_TEXPRINT  if (RNODE != nullptr) Node_tex_print(tree,  RNODE, file);
+#define L_TEXPRINT  if (LNODE != nullptr) Node_tex_print(tree, begin, LNODE, file);
+#define R_TEXPRINT  if (RNODE != nullptr) Node_tex_print(tree, begin, RNODE, file);
 #define L_PRINT     if (LNODE != nullptr) Node_text_print(tree, LNODE, file);
 #define R_PRINT     if (RNODE != nullptr) Node_text_print(tree, RNODE, file);
 
-#define dL Derivative(tree, LNODE, var, hash_var, file, text)
-#define dR Derivative(tree, RNODE, var, hash_var, file, text)
+#define dL Derivative(function, tree, LNODE, var, hash_var, file, text)
+#define dR Derivative(function, tree, RNODE, var, hash_var, file, text)
+#define d(node) Derivative(function, tree, node, var, hash_var, file, text)
 
-#define LCALC Evaluation(tree, current_node->left,  file, text)
-#define RCALC Evaluation(tree, current_node->right, file, text)
+#define LCALC Evaluation(function, tree, current_node->left,  file, text)
+#define RCALC Evaluation(function, tree, current_node->right, file, text)
 
-#define OP_TEXPRINT(start, mid, end) fprintf(file, start); \
-                                     L_TEXPRINT;           \
-                                     fprintf(file, mid);   \
-                                     R_TEXPRINT;           \
-                                     fprintf(file, end);  
 
-#define OP_PRINT(start, mid, end) fprintf(file, start);    \
-                                  L_PRINT;                 \
-                                  fprintf(file, mid);      \
-                                  R_PRINT;                 \
-                                  fprintf(file, end);  
+#define OP_TEXPRINT(mid)    L_TEXPRINT;              \
+                            fprintf(file, mid);      \
+                            R_TEXPRINT;
+
+#define OP_PRINT(mid)       L_PRINT;                 \
+                            fprintf(file, mid);      \
+                            R_PRINT;
+
+#define OP_BTEXPRINT(start, mid, end) fprintf(file, start); \
+                                      L_TEXPRINT;           \
+                                      fprintf(file, mid);   \
+                                      R_TEXPRINT;           \
+                                      fprintf(file, end);  
+
+
+#define OP_BPRINT(start, mid, end)    fprintf(file, start); \
+                                      L_PRINT;              \
+                                      fprintf(file, mid);   \
+                                      R_PRINT;              \
+                                      fprintf(file, end);  
 
 
 

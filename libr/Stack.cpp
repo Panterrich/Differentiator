@@ -3,7 +3,7 @@
 
 void Stack_construct(struct Stack* stk, long capacity)
 {
-    NULL_check(stk);
+    Stack_null_check(stk);
 
     if (capacity < 0)
     {   
@@ -13,7 +13,7 @@ void Stack_construct(struct Stack* stk, long capacity)
 
     if (capacity == 0)
     {
-        stk->capacity = capacity;
+        stk->capacity = (size_t)capacity;
         stk->canary_struct_left  = Canary;
         stk->canary_struct_right = Canary;
         stk->size  = 0;
@@ -23,7 +23,7 @@ void Stack_construct(struct Stack* stk, long capacity)
 
     else
     {   
-        stk->capacity = capacity;
+        stk->capacity = (size_t)capacity;
         stk->canary_struct_left  = Canary;
         stk->canary_struct_right = Canary;
         stk->struct_hash = 0;
@@ -48,7 +48,7 @@ void Stack_construct(struct Stack* stk, long capacity)
 
 void Stack_push(struct Stack* stk, element_t element)
 {
-    NULL_check(stk);
+    Stack_null_check(stk);
     STACK_ASSERT_OK(stk);
 
     Stack_reallocation_memory(stk);
@@ -68,7 +68,7 @@ void Stack_push(struct Stack* stk, element_t element)
 
 element_t Stack_pop(struct Stack* stk)
 {
-    NULL_check(stk);
+    Stack_null_check(stk);
     STACK_ASSERT_OK(stk);
 
     Stack_reverse_reallocation_memory(stk);
@@ -91,7 +91,7 @@ element_t Stack_pop(struct Stack* stk)
 
 void Stack_reallocation_memory(struct Stack* stk)
 {
-    NULL_check(stk);
+    Stack_null_check(stk);
 
     if (stk->capacity == 0)
     {   
@@ -119,7 +119,7 @@ void Stack_reallocation_memory(struct Stack* stk)
 
         if (temp == nullptr)
         {
-            temp = realloc(&((canary_t*)stk->data)[-1], 1.5 * stk->capacity * sizeof(element_t) + 2 * sizeof(canary_t));
+            temp = realloc(&((canary_t*)stk->data)[-1], (size_t)(1.5 * (double)stk->capacity * sizeof(element_t) + 2 * sizeof(canary_t)));
 
             if (temp == nullptr)
             {
@@ -144,7 +144,7 @@ void Stack_reallocation_memory(struct Stack* stk)
 
             else
             {   
-                stk->capacity *= 1.5;
+                stk->capacity = (size_t)(1.5 * (double)stk->capacity);
 
                 Placing_canary(stk, temp);
                 Poison_filling(stk, stk->size + 1, stk->capacity);
@@ -164,7 +164,7 @@ void Stack_reallocation_memory(struct Stack* stk)
 
 void Stack_reverse_reallocation_memory(struct Stack* stk)
 {
-    NULL_check(stk);
+    Stack_null_check(stk);
 
     if ((stk->capacity >= 4) && (stk->size < ((stk->capacity) / 4)))
     {
@@ -180,16 +180,16 @@ void Stack_reverse_reallocation_memory(struct Stack* stk)
 
 void Stack_destruct(struct Stack* stk)
 {
-    NULL_check(stk);
+    Stack_null_check(stk);
 
     if (stk->data != nullptr) free(&(((canary_t*)stk->data)[-1]));
 
     stk->data  = nullptr;
-    stk->size  = -1;
+    stk->size  = (size_t)-1;
     stk->error =  0;
-    stk->capacity    = -1;
+    stk->capacity    = (size_t)-1;
     stk->struct_hash =  0;
     stk->stack_hash  =  0;
-    stk->canary_struct_left  = -1;
-    stk->canary_struct_right = -1;
+    stk->canary_struct_left  = (canary_t)-1;
+    stk->canary_struct_right = (canary_t)-1;
 }

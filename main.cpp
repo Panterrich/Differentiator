@@ -2,7 +2,7 @@
 
 int main(int argc, char* argv[])
 {
-    srand(time(nullptr));
+    srand((unsigned int)time(nullptr));
 
     const char* name_equation = nullptr;
 
@@ -16,33 +16,22 @@ int main(int argc, char* argv[])
         name_equation = argv[1];
     }
 
-    struct Tree tree = {};
-    TREE_CONSTRUCT(&tree);
-
     struct Text text = {};
+    struct Function function = {};
+
+    FUNCTION_CONSTRUCT(&function);
+    struct Tree* tree = function.tree;
+
+    Function_create(&function, name_equation);
+
+    Tree_graph(tree);
+
+    FILE* file = Equation_tex_dump_open(tree, &text);
+    Equation_tex_print(tree, tree->root, file, &text);
+
+    Total_derivative(&function, file, &text);
     
-    Tree_create(&tree, name_equation);
+    Equation_tex_dump_close(tree, file);
 
-    Tree_graph(&tree);
-
-    FILE* file = Equation_tex_dump_open(&tree, &text);
-
-    Equation_tex_print(&tree, file, &text);
-
-    tree.root = Derivative(&tree, tree.root, "x", Hash("x"), file, &text);
-
-    Tree_graph(&tree);
-
-    Optimization(&tree, file, &text);
-
-    Tree_graph(&tree);
-    
-    Equation_tex_dump_close(&tree, file);
-
-
-    FILE* log1 = fopen("log.txt", "a");
-
-    Tree_dump(&tree, log1);
-
-    fclose(log1);
+    Tree_destruct(tree);
 }

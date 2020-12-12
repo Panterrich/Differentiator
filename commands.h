@@ -6,7 +6,11 @@ DEF_OP(+, ADD, 43,
 
 DEF_OP(-, SUB, 45, 
     {
-        LNODE = dL; 
+        if (LNODE != nullptr) 
+        {
+            LNODE = dL; 
+        }
+        
         RNODE = dR;
     })
 
