@@ -8,7 +8,7 @@ int main(int argc, char* argv[])
 
     if (argc < 2)
     {
-        printf("Введите имя файла с уравнением!");
+        printf("Введите имя файла с уравнением!\n");
         return 1;
     }
 

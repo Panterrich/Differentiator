@@ -5,6 +5,23 @@ void Stack_construct(struct Stack* stk, long capacity)
 {
     Stack_null_check(stk);
 
+    if ((stk->canary_struct_left != 0) || (stk->canary_struct_right != 0))
+    {   
+        if (!Stack_is_destructed(stk))
+        {   
+            if (stk->struct_hash != Struct_stack_HASHFAQ6(stk))
+            {
+                stk->error = WRONG_STRUCT_HASH;
+                STACK_ASSERT_OK(stk);
+            }
+
+            else
+            {   
+                Stack_destruct(stk);
+            }
+        }
+    }
+
     if (capacity < 0)
     {   
         stk->error = NEGATIVE_CAPACITY;
@@ -19,6 +36,9 @@ void Stack_construct(struct Stack* stk, long capacity)
         stk->size  = 0;
         stk->error = 0;
         stk->data = nullptr;
+
+        stk->struct_hash = Struct_stack_HASHFAQ6(stk);
+        stk->stack_hash  = Stack_HASHFAQ6(stk);
     }
 
     else
@@ -38,11 +58,14 @@ void Stack_construct(struct Stack* stk, long capacity)
         }
 
         Placing_canary(stk, temp);
-
+        
         stk->size  = 0;
         stk->error = 0;
 
         Poison_filling(stk, stk->size, stk->capacity);
+
+        stk->struct_hash = Struct_stack_HASHFAQ6(stk);
+        stk->stack_hash  = Stack_HASHFAQ6(stk);
     }
 }
 
@@ -62,6 +85,9 @@ void Stack_push(struct Stack* stk, element_t element)
     }
 
     stk->data[(stk->size)++] = element;
+
+    stk->struct_hash = Struct_stack_HASHFAQ6(stk);
+    stk->stack_hash  = Stack_HASHFAQ6(stk);
 
     STACK_ASSERT_OK(stk);
 }
@@ -86,6 +112,9 @@ element_t Stack_pop(struct Stack* stk)
     temp = stk->data[--(stk->size)];
     stk->data[stk->size] = Poison;
 
+    stk->struct_hash = Struct_stack_HASHFAQ6(stk);
+    stk->stack_hash  = Stack_HASHFAQ6(stk);
+
     return temp;
 }
 
@@ -109,6 +138,9 @@ void Stack_reallocation_memory(struct Stack* stk)
         Placing_canary(stk, temp);
 
         Poison_filling(stk, stk->size, stk->capacity);
+
+        stk->struct_hash = Struct_stack_HASHFAQ6(stk);
+        stk->stack_hash  = Stack_HASHFAQ6(stk);
     }
 
     if (stk->size == (stk->capacity - 1))
@@ -138,6 +170,9 @@ void Stack_reallocation_memory(struct Stack* stk)
                     Placing_canary(stk, temp);
 
                     stk->data[stk->capacity - 1] = Poison;
+
+                    stk->struct_hash = Struct_stack_HASHFAQ6(stk);
+                    stk->stack_hash  = Stack_HASHFAQ6(stk);
                 }
 
             }
@@ -148,6 +183,9 @@ void Stack_reallocation_memory(struct Stack* stk)
 
                 Placing_canary(stk, temp);
                 Poison_filling(stk, stk->size + 1, stk->capacity);
+
+                stk->struct_hash = Struct_stack_HASHFAQ6(stk);
+                stk->stack_hash  = Stack_HASHFAQ6(stk);
             }
             
         }
@@ -158,6 +196,9 @@ void Stack_reallocation_memory(struct Stack* stk)
 
             Placing_canary(stk, temp);
             Poison_filling(stk, stk->size + 1, stk->capacity);
+
+            stk->struct_hash = Struct_stack_HASHFAQ6(stk);
+            stk->stack_hash  = Stack_HASHFAQ6(stk);
         }
     }
 }
@@ -173,6 +214,9 @@ void Stack_reverse_reallocation_memory(struct Stack* stk)
         void* temp = realloc(&((canary_t*)stk->data)[-1], (stk->capacity + 1) * sizeof(element_t) + 2 * sizeof(canary_t));
 
         Placing_canary(stk, temp);
+
+        stk->struct_hash = Struct_stack_HASHFAQ6(stk);
+        stk->stack_hash  = Stack_HASHFAQ6(stk);
     }
 
     STACK_ASSERT_OK(stk);
