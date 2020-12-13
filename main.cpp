@@ -6,9 +6,10 @@ int main(int argc, char* argv[])
 
     const char* name_equation = nullptr;
 
-    if (argc == 1)
+    if (argc < 2)
     {
-        name_equation = "Equation.txt";
+        printf("Введите имя файла с уравнением!");
+        return 1;
     }
 
     else if (argc == 2)

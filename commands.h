@@ -157,12 +157,8 @@ DEF_FUNC(ln,     LN,     0x101ba648, 65,
 
 DEF_FUNC(sin,    SIN,    0xbf987f58, 66, 
     {
-        struct Node* arg   = Node_clone(RNODE, nullptr);
-
-        char* name_func = (char*) calloc(MAX_SIZE_NAME_FUNC, sizeof(char));
-        sprintf(name_func, "cos");
-
-        struct Node* func = CNODE_FUNC(name_func, COS, arg);
+        struct Node* arg  = Node_clone(RNODE, nullptr);
+        struct Node* func = CNODE_FUNC(strdup("cos"), COS, arg);
 
         free(FUNCTION);
 
@@ -175,13 +171,9 @@ DEF_FUNC(sin,    SIN,    0xbf987f58, 66,
 
 DEF_FUNC(cos,    COS,    0x238fe9,   67, 
     {
-        struct Node* arg   = Node_clone(RNODE, nullptr);
-
-        char* name_func = (char*) calloc(MAX_SIZE_NAME_FUNC, sizeof(char));
-        sprintf(name_func, "sin");
-
+        struct Node* arg  = Node_clone(RNODE, nullptr);
         struct Node* num  = CNODE_NUM(-1);
-        struct Node* func = CNODE_FUNC(name_func, SIN, arg);
+        struct Node* func = CNODE_FUNC(strdup("sin"), SIN, arg);
         struct Node* mul  = CNODE_OP(num, MUL, func);
 
         free(FUNCTION);
@@ -196,12 +188,8 @@ DEF_FUNC(cos,    COS,    0x238fe9,   67,
 DEF_FUNC(tg,     TG,     0xf5a17ed,  68, 
     {
         struct Node* arg  = Node_clone(RNODE, nullptr);
-
-        char* name_func = (char*) calloc(MAX_SIZE_NAME_FUNC, sizeof(char));
-        sprintf(name_func, "cos");
-
         struct Node* deg  = CNODE_NUM(2);
-        struct Node* func = CNODE_FUNC(name_func, COS, arg);
+        struct Node* func = CNODE_FUNC(strdup("cos"), COS, arg);
         struct Node* pow  = CNODE_OP(func, POW, deg);
 
         free(FUNCTION);
@@ -217,12 +205,8 @@ DEF_FUNC(ctg,    CTG,    0xdf88c1c4, 69,
     {
         struct Node* arg  = Node_clone(RNODE, nullptr);
         struct Node* left = dR;
-
-        char* name_func = (char*) calloc(MAX_SIZE_STR, sizeof(char));
-        sprintf(name_func, "sin");
-
         struct Node* deg  = CNODE_NUM(2);
-        struct Node* func = CNODE_FUNC(name_func, SIN, arg);
+        struct Node* func = CNODE_FUNC(strdup("sin"), SIN, arg);
         struct Node* pow  = CNODE_OP(func, POW, deg);
         struct Node* div  = CNODE_OP(left, DIV, pow);
         struct Node* num  = CNODE_NUM(-1);
@@ -239,16 +223,11 @@ DEF_FUNC(ctg,    CTG,    0xdf88c1c4, 69,
 DEF_FUNC(arcsin, ARCSIN, 0xbf69dd95, 70, 
     {
         struct Node* arg  = Node_clone(RNODE, nullptr);
-
-        char* name_func = (char*) calloc(MAX_SIZE_NAME_FUNC, sizeof(char));
-        sprintf(name_func, "sqrt");
-
         struct Node* num1 = CNODE_NUM(1);
         struct Node* num2 = CNODE_NUM(2);
-
         struct Node* pow  = CNODE_OP(arg,  POW, num2);
         struct Node* sub  = CNODE_OP(num1, SUB, pow);
-        struct Node* func = CNODE_FUNC(name_func, SQRT, sub);
+        struct Node* func = CNODE_FUNC(strdup("sqrt"), SQRT, sub);
         
         free(FUNCTION);
 
@@ -262,18 +241,14 @@ DEF_FUNC(arcsin, ARCSIN, 0xbf69dd95, 70,
 DEF_FUNC(arccos, ARCCOS, 0x9a380fc2, 71, 
     {
         struct Node* arg  = Node_clone(RNODE, nullptr);
-        struct Node* left = dR;
-
-        char* name_func = (char*) calloc(MAX_SIZE_NAME_FUNC, sizeof(char));
-        sprintf(name_func, "sqrt");
-        
+        struct Node* left = dR;        
         struct Node* num  = CNODE_NUM(-1);
         struct Node* num1 = CNODE_NUM(1);
         struct Node* num2 = CNODE_NUM(2);
 
         struct Node* pow  = CNODE_OP(arg,  POW, num2);
         struct Node* sub  = CNODE_OP(num1, SUB, pow);
-        struct Node* func = CNODE_FUNC(name_func, SQRT, sub);
+        struct Node* func = CNODE_FUNC(strdup("sqrt"), SQRT, sub);
         struct Node* div  = CNODE_OP(left, DIV, func);
 
         free(FUNCTION);
@@ -329,11 +304,7 @@ DEF_FUNC(arcctg, ARCCTG, 0xbc7147b0, 73,
 DEF_FUNC(sh,     SH,     0x6c8057cc, 74, 
     {
         struct Node* arg  = Node_clone(RNODE, nullptr);
-
-        char* name_func = (char*) calloc(MAX_SIZE_NAME_FUNC, sizeof(char));
-        sprintf(name_func, "ch");
-
-        struct Node* func = CNODE_FUNC(name_func, CH, arg);
+        struct Node* func = CNODE_FUNC(strdup("ch"), CH, arg);
 
         free(FUNCTION);
 
@@ -347,11 +318,7 @@ DEF_FUNC(sh,     SH,     0x6c8057cc, 74,
 DEF_FUNC(ch,     CH,     0x4ab1a5ab, 75, 
     {
         struct Node* arg  = Node_clone(RNODE, nullptr);
-
-        char* name_func = (char*) calloc(MAX_SIZE_NAME_FUNC, sizeof(char));
-        sprintf(name_func, "sh");
-
-        struct Node* func = CNODE_FUNC(name_func, SH, arg);
+        struct Node* func = CNODE_FUNC(strdup("sh"), SH, arg);
 
         free(FUNCTION);
 
@@ -366,12 +333,8 @@ DEF_FUNC(th,     TH,     0x6a4bcdcf, 76,
     {
         struct Node* arg  = Node_clone(RNODE, nullptr);
         struct Node* left = dR;
-
-        char* name_func = (char*) calloc(MAX_SIZE_NAME_FUNC, sizeof(char));
-        sprintf(name_func, "ch");
-
         struct Node* deg  = CNODE_NUM(2);
-        struct Node* func = CNODE_FUNC(name_func, CH, arg);
+        struct Node* func = CNODE_FUNC(strdup("ch"), CH, arg);
         struct Node* pow  = CNODE_OP(func, POW, deg);
 
         free(FUNCTION);
@@ -387,12 +350,8 @@ DEF_FUNC(cth,    CTH,    0xf562ed78, 77,
     {
         struct Node* arg  = Node_clone(RNODE, nullptr);
         struct Node* left = dR;
-
-        char* name_func = (char*) calloc(MAX_SIZE_STR, sizeof(char));
-        sprintf(name_func, "sh");
-
         struct Node* deg  = CNODE_NUM(2);
-        struct Node* func = CNODE_FUNC(name_func, SH, arg);
+        struct Node* func = CNODE_FUNC(strdup("sh"), SH, arg);
         struct Node* pow  = CNODE_OP(func, POW, deg);
         struct Node* div  = CNODE_OP(left, DIV, pow);
         struct Node* num  = CNODE_NUM(-1);
@@ -408,12 +367,8 @@ DEF_FUNC(cth,    CTH,    0xf562ed78, 77,
 DEF_FUNC(sqrt,   SQRT,   0x145c7701, 78, 
     {
         struct Node* arg  = Node_clone(RNODE, nullptr);
-
-        char* name_func = (char*) calloc(MAX_SIZE_STR, sizeof(char));
-        sprintf(name_func, "sqrt");
-
         struct Node* num  = CNODE_NUM(2);
-        struct Node* func = CNODE_FUNC(name_func, SQRT, arg);
+        struct Node* func = CNODE_FUNC(strdup("sqrt"), SQRT, arg);
         struct Node* mul  = CNODE_OP(num, MUL, func);
 
         free(FUNCTION);
@@ -428,11 +383,7 @@ DEF_FUNC(sqrt,   SQRT,   0x145c7701, 78,
 DEF_FUNC(exp,    EXP,    0xe2313450, 79, 
     {
         struct Node* arg  = Node_clone(RNODE, nullptr);
-
-        char* name_func = (char*) calloc(MAX_SIZE_STR, sizeof(char));
-        sprintf(name_func, "exp");
-
-        struct Node* func = CNODE_FUNC(name_func, EXP, arg);
+        struct Node* func = CNODE_FUNC(strdup("exp"), EXP, arg);
 
         free(FUNCTION);
 
